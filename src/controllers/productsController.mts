@@ -25,6 +25,33 @@ router.get("/productName", (req: Request, res: Response) => {
   }
 });
 
-router.put("/", (req: Request, res: Response) => {});
+router.put("/:productName", (req: Request, res: Response) => {
+  const productName: string = req.params.productName;
+  const updatedProduct: Product = req.body;
+  let found = false;
+  products = products.map((product) => {
+    if (product.name === productName) {
+      found = true;
+      return { ...product, ...updatedProduct };
+    }
+    return product;
+  });
+  if (found) {
+    res.json({ message: "Product updated successfully" });
+  } else {
+    res.status(404).json({ message: "Product not found" });
+  }
+});
+
+router.delete("/:productName", (req: Request, res: Response) => {
+  const productName: string = req.params.productName;
+  const initialLength = products.length;
+  products = products.filter((product) => product.name !== productName);
+  if (products.length < initialLength) {
+    res.json({ message: "Product deleted successfully" });
+  } else {
+    res.status(404).json({ message: "Product not found" });
+  }
+});
 
 export default router;
