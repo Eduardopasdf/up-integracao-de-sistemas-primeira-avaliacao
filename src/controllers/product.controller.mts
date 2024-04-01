@@ -5,7 +5,7 @@ import { db } from "../db/index.mjs";
 import { products } from "../db/schema.mjs";
 
 const router = express.Router();
-type InsertProduct = typeof products.$inferInsert
+type InsertProduct = typeof products.$inferInsert;
 
 router.get("/", async (_request: Request, response: Response) => {
   response.json({ result: await db.query.products.findMany() });
@@ -59,12 +59,14 @@ router.put("/", async (request: Request, response: Response) => {
 
 router.delete("/:id", async (request: Request, response: Response) => {
   const { id } = request.params;
-  response.json({
-    result: await db
-      .delete(products)
-      .where(eq(products.id, Number.parseInt(id)))
-      .returning({ id: products.id }),
-  });
+  const { rowCount } = await db
+    .delete(products)
+    .where(eq(products.id, Number.parseInt(id)));
+  if (rowCount > 0) {
+    response.json({
+      message: "Product deleted successfully.",
+    });
+  } else response.status(501).json({ message: "Failed to delete product." });
 });
 
 export default router;
