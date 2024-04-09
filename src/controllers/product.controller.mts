@@ -26,11 +26,14 @@ router.get("/search", async (request: Request, response: Response) => {
 
 router.get("/:id", async (request: Request, response: Response) => {
   const { id } = request.params;
-  response.json({
-    result: await db.query.products.findFirst({
-      where: eq(products.id, Number.parseInt(id)),
-    }),
-  });
+  if (!id) {
+    response.status(400).json({ message: "Missing identifier." });
+  } else
+    response.json({
+      result: await db.query.products.findFirst({
+        where: eq(products.id, Number.parseInt(id)),
+      }),
+    });
 });
 
 router.post("/", async (request: Request, response: Response) => {
@@ -43,16 +46,17 @@ router.post("/", async (request: Request, response: Response) => {
   });
 });
 
-router.put("/", async (request: Request, response: Response) => {
+router.put("/:id", async (request: Request, response: Response) => {
   const body: InsertProduct = request.body;
-  if (!body.id) {
+  const { id } = request.params;
+  if (!id) {
     response.status(400).json({ message: "Missing identifier." });
   } else
     response.json({
       result: await db
         .update(products)
         .set({ ...body })
-        .where(eq(products.id, body.id))
+        .where(eq(products.id, Number.parseInt(id)))
         .returning(),
     });
 });
